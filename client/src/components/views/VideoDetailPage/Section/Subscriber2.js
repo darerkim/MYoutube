@@ -1,0 +1,82 @@
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
+
+function Subscriber2(props) {
+  const userTo = props.userTo
+  const userFrom = props.userFrom
+  const [SubscribeNumber, setSubscribeNumber] = useState(0)
+  const [Subscribed, setSubscribed] = useState(false)
+  const [Loading, setLoading] = useState(true)
+  const onSubscribe = () => {
+    let subscribeVariables = {
+      userTo: userTo,
+      userFrom: userFrom
+    }
+    if (Subscribed) {
+      // 이미 구독 중 일때
+      axios.post('/api/subscribe/unSubscribe', subscribeVariables)
+        .then(response => {
+          if (response.data.success) {
+            setSubscribeNumber(SubscribeNumber - 1)
+            setSubscribed(!Subscribed)
+          } else {
+            alert('Failed to unsubscribe')
+          }
+        })
+    } else {
+      // 구독 중이 아닐 때
+      axios.post('/api/subscribe/subscribe', subscribeVariables)
+        .then(response => {
+          if (response.data.success) {
+            setSubscribeNumber(SubscribeNumber + 1)
+            setSubscribed(!Subscribed)
+          } else {
+            alert('Failed to subscribe')
+          }
+        })
+    }
+  }
+  useEffect(() => {
+    const subscribeNumberVariables = { userTo: userTo, userFrom: userFrom }
+    axios.post('/api/subscribe/subscribeNumber', subscribeNumberVariables)
+      .then(response => {
+        if (response.data.success) {
+          setSubscribeNumber(response.data.subscribeNumber)
+          setLoading(false)
+          console.log("ddd", response)
+        } else {
+          alert('Failed to get subscriber Number')
+        }
+      })
+    axios.post('/api/subscribe/subscribed', subscribeNumberVariables)
+      .then(response => {
+        if (response.data.success) {
+          console.log('haha')
+          setSubscribed(response.data.subcribed)
+        } else {
+          alert('Failed to get Subscribed Information')
+        }
+      })
+  }, [])
+  if (Loading) {
+    return (
+      <div></div>
+    )
+  } else {
+    return (
+      <div>
+        <button
+          onClick={onSubscribe}
+          style={{
+            backgroundColor: `${Subscribed ? '#AAAAAA' : '#CC0000'}`,
+            borderRadius: '4px', color: 'white',
+            padding: '10px 16px', fontWeight: '500', fontSize: '1rem', textTransform: 'uppercase'
+          }}>
+          {SubscribeNumber} {Subscribed ? 'Subscribed' : 'Subscribe'}
+        </button>
+      </div>
+    )
+  }
+}
+
+export default Subscriber2
